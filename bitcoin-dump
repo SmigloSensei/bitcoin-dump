@@ -1,0 +1,70 @@
+#!/bin/bash
+# bitcoin-dump v1.0 (c) 2024 Sensei & Smiglo <kamilburek@lispol.pl>
+# Dumps the entire blockchain or a sequence of blocks to human readable format JSON.
+# The output directory is controlled by DUMP_BLOCK_DIR.
+#
+# Usage:
+# bitcoin-dump                 - Dumps the entire blockchain.
+# bitcoin-dump [START] [END]   - Drops a sequence of blocks.
+#
+# Warning:
+# JSON files that already exist are skipped.
+# JSON files from the most recent blocks in the blockchain are unreliable, which is why SAFE_BLOCK_MARGIN exists.
+#
+# To count files with 0 size use (e.g. out of disk space during the dump):
+# find blocks -type f -size 0 | wc -l
+#
+# To delete files with 0 size use (and recreate by 2nd bitcoin-dump):
+# find blocks -type f -size 0 -delete
+#
+# To count txids in a block use:
+# cat $DUMP_BLOCK_FILE | grep nTx | grep -Po "\d*"
+#
+# To extract txids from a block use:
+# tail -n $[$(cat $DUMP_BLOCK_FILE | grep nTx | grep -Po "\d*")+2] $DUMP_BLOCK_FILE | grep -Po "[a-z0-9]*"
+
+DUMP_BLOCK_DIR="./blocks"
+
+# Check if cli is available from PATH:
+BITCOIN_CLI=$(command -v bitcoin-cli)
+if [[ ! -x "$BITCOIN_CLI" ]]; then
+	# Change it accordingly to the location of the bitcoin directory.
+	BITCOIN_DIR="/home/$USER/Programs/Crypto/bitcoin-25.0/"
+	BITCOIN_BIN_DIR="$BITCOIN_DIR/bin"
+	BITCOIN_CLI="$BITCOIN_BIN_DIR/bitcoin-cli"
+	if [[ ! -x "$BITCOIN_CLI" ]]; then
+		echo "The tool has not been configured. Read the source code!"
+		exit 1
+	fi
+fi
+
+# The last blocks in the chain can be changed or rearranged..
+SAFE_BLOCK_MARGIN=10
+
+if [[ $# -eq 2 ]]; then
+	START=$1
+	END=$2
+else
+	START=0
+	END=$($BITCOIN_CLI getblockcount)
+fi
+
+END=$[END-SAFE_BLOCK_MARGIN]
+if [[ $END -lt $START ]]; then
+	END=$START
+fi
+
+echo "Start: $START"
+echo "End: $END"
+
+mkdir -p "$DUMP_BLOCK_DIR"
+for BLOCK in $(seq $START $END); do
+	DUMP_BLOCK_FILE=$(printf "$DUMP_BLOCK_DIR/block%08ld.json" $BLOCK)
+	if [[ ! -f "$DUMP_BLOCK_FILE" ]]; then
+		echo "Processing block $BLOCK.."
+		BLOCK_HASH=$($BITCOIN_CLI getblockhash "$BLOCK")
+		$BITCOIN_CLI getblock "$BLOCK_HASH" >"$DUMP_BLOCK_FILE"
+	fi
+done
+
+echo "Done"
