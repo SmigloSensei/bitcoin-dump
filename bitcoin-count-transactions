@@ -1,0 +1,38 @@
+#!/bin/bash
+# bitcoin-count-transactions v1.0 (c) 2024 Sensei & Smiglo <kamilburek@lispol.pl>
+# Counts the number of transactions in the blockchain that have been dumped.
+#
+# Usage:
+# bitcoin-count-transactions	- Counts the number of transactions in the blockchain that have been dumped.
+
+DUMP_BLOCK_DIR="./blocks"
+
+# Check if cli is available from PATH:
+BITCOIN_CLI=$(command -v bitcoin-cli)
+if [[ ! -x "$BITCOIN_CLI" ]]; then
+	# Change it accordingly to the location of the bitcoin directory.
+	BITCOIN_DIR="/home/$USER/Programs/Crypto/bitcoin-25.0/"
+	BITCOIN_BIN_DIR="$BITCOIN_DIR/bin"
+	BITCOIN_CLI="$BITCOIN_BIN_DIR/bitcoin-cli"
+	if [[ ! -x "$BITCOIN_CLI" ]]; then
+		echo "The tool has not been configured. Read the source code!"
+		exit 1
+	fi
+fi
+
+START=0
+END=$($BITCOIN_CLI getblockcount)
+
+TX_COUNT=0
+
+mkdir -p "$DUMP_BLOCK_DIR"
+for BLOCK in $(seq $START $END); do
+	DUMP_BLOCK_FILE=$(printf "$DUMP_BLOCK_DIR/block%08ld.json" $BLOCK)
+	if [[ -f "$DUMP_BLOCK_FILE" ]]; then
+		TX_NEW_COUNT=$(cat $DUMP_BLOCK_FILE | grep nTx | grep -Po "\d*")
+		TX_COUNT=$[TX_COUNT+TX_NEW_COUNT]
+		#echo "$TX_NEW_COUNT $TX_COUNT"
+	fi
+done
+
+echo "$TX_COUNT"
