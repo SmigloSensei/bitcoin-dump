@@ -1,5 +1,5 @@
 # Information
-Dumps the entire blockchain or a sequence of blocks to human readable format JSON.<br />
+Dumps the entire blockchain or a sequence of blocks in human readable format JSON.<br />
 The output directory is controlled by DUMP_BLOCK_DIR.
 
 # Usage
