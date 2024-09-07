@@ -1,5 +1,5 @@
 #!/bin/bash
-# bitcoin-dump v1.0 (c) 2024 Sensei & Smiglo <kamilburek@lispol.pl>
+# bitcoin-dump v1.0 (c) 2024 Sensei & Smiglo <burixon.developement@gmail.com>
 # Dumps the entire blockchain or a sequence of blocks in human readable format JSON.
 # The output directory is controlled by DUMP_BLOCK_DIR.
 #
