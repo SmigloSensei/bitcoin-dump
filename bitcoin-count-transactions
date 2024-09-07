@@ -1,5 +1,5 @@
 #!/bin/bash
-# bitcoin-count-transactions v1.0 (c) 2024 Sensei & Smiglo <kamilburek@lispol.pl>
+# bitcoin-count-transactions v1.0 (c) 2024 Sensei & Smiglo <burixon.developement@gmail.com>
 # Counts the number of transactions in the blockchain that have been dumped.
 #
 # Usage:
